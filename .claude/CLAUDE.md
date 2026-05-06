@@ -110,7 +110,9 @@ All inter-agent data must be validated Pydantic models. JSON-in-prompt with rege
 
 - Use `openai` SDK with `base_url="https://openrouter.ai/api/v1"` and `api_key=OPENROUTER_API_KEY`
 - No LangChain or LangGraph wrapper — raw SDK calls only
-- Model selection per agent using free OpenRouter models (e.g. `meta-llama/llama-3.3-70b-instruct:free`, `mistralai/mistral-7b-instruct:free`)
+- Model: `openrouter/free` (OpenRouter auto-routes to best available free model)
+- Endpoint: `https://openrouter.ai/api/v1/chat/completions`
+- Structured output via `response_format={"type": "json_object"}` — required for all agent calls that return Pydantic models
 - Tool calls wired via OpenRouter's tool-use support (OpenAI-compatible `tools` parameter) — not bolted-on string parsing
 - Observability: every call logs `agent_name`, `model`, `prompt_tokens`, `completion_tokens`, `latency_ms` (cost tracked as $0 for free tier but structure preserved for paid-tier compatibility)
 - Retry on rate limits and transient errors using `tenacity` with exponential backoff
