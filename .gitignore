@@ -1,0 +1,40 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# Distribution / build
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Django
+*.sqlite3
+*.log
+local_settings.py
+media/
+
+# Environment variables
+.env
+.env.*
+
+# Compiled static files
+staticfiles/
+static/CACHE/
+
+# Run outputs
+runs/*/log.jsonl
+runs/*/*.json
+
+# IDE / OS
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db

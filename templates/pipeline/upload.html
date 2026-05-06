@@ -1,0 +1,284 @@
+{% extends "adminlte/base.html" %}
+{% load static %}
+
+{% block title %}New Run{% endblock %}
+{% block page_title %}New Pipeline Run{% endblock %}
+{% block nav_upload_active %}active{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">New Run</li>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pp_upload.css' %}">
+{% endblock %}
+
+{% block content %}
+
+{% if success %}
+<!-- ── Success state ─────────────────────────────────── -->
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card card-success elevation-2">
+      <div class="card-body pp-success-card">
+        <div class="pp-success-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h3 class="font-weight-bold mb-2">Files uploaded successfully</h3>
+        <p class="text-muted mb-4">
+          {{ file_count }} file{{ file_count|pluralize }} received.
+          The pipeline will begin processing shortly.
+        </p>
+        <a href="{% url 'pipeline:upload' %}" class="btn btn-outline-success btn-lg">
+          <i class="fas fa-plus mr-2"></i>Start Another Run
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% else %}
+<!-- ── Upload form ───────────────────────────────────── -->
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-7">
+
+    <div class="card elevation-2">
+      <div class="card-header border-0 pb-0">
+        <h3 class="card-title font-weight-bold">
+          <i class="fas fa-file-import mr-2 text-primary"></i>Upload Intake Documents
+        </h3>
+        <p class="text-muted mb-0 mt-1" style="font-size:.9rem;">
+          Attach the client intake docs and discovery transcripts to begin.
+        </p>
+      </div>
+
+      <div class="card-body pt-3">
+        <form id="pp-upload-form" method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          <!-- Form-level errors -->
+          {% if form.errors %}
+          <div class="pp-error-list">
+            {% for field, errors in form.errors.items %}
+              {% for error in errors %}
+              <div class="alert alert-danger alert-dismissible py-2">
+                <button type="button" class="close py-2" data-dismiss="alert">&times;</button>
+                <i class="icon fas fa-exclamation-circle"></i> {{ error }}
+              </div>
+              {% endfor %}
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <!-- Drop zone -->
+          <div class="pp-dropzone" id="pp-dropzone" tabindex="0" role="button"
+               aria-label="Click or drag files here to upload">
+            <input
+              type="file"
+              id="pp-file-input"
+              name="files"
+              multiple
+              accept=".pdf,.doc,.docx,.md"
+              aria-hidden="true"
+            >
+            <div class="pp-dropzone-icon">
+              <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <p class="pp-dropzone-title">Drop files here or click to browse</p>
+            <p class="pp-dropzone-hint">Drag &amp; drop one or more files onto this area</p>
+            <div class="pp-dropzone-types">
+              <span class="pp-type-badge">.pdf</span>
+              <span class="pp-type-badge">.doc</span>
+              <span class="pp-type-badge">.docx</span>
+              <span class="pp-type-badge">.md</span>
+            </div>
+          </div>
+
+          <!-- File list -->
+          <div class="pp-file-list" id="pp-file-list" hidden>
+            <p class="pp-file-list-title">
+              <i class="fas fa-paperclip mr-1"></i>Attached files
+            </p>
+            <div id="pp-file-items"></div>
+          </div>
+
+          <!-- Submit row -->
+          <div class="pp-submit-row">
+            <button
+              type="submit"
+              id="pp-submit-btn"
+              class="btn btn-primary btn-lg"
+              disabled
+            >
+              <i class="fas fa-play mr-2"></i>Run Pipeline
+            </button>
+            <span class="pp-file-count-badge" id="pp-file-count"></span>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Info card -->
+    <div class="card card-outline card-info elevation-0">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-info-circle mr-2 text-info"></i>What happens next?
+        </h3>
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item border-0 py-2">
+            <span class="badge badge-primary mr-2">1</span>
+            <strong>Debrief Agent</strong> parses intake docs and transcripts into a 4×4 client matrix.
+          </li>
+          <li class="list-group-item border-0 py-2">
+            <span class="badge badge-primary mr-2">2</span>
+            <strong>Proposal Agent</strong> drafts a structured consulting proposal.
+          </li>
+          <li class="list-group-item border-0 py-2">
+            <span class="badge badge-primary mr-2">3</span>
+            <strong>Review Agent</strong> critiques the draft and translates feedback for refinement.
+          </li>
+          <li class="list-group-item border-0 py-2">
+            <span class="badge badge-primary mr-2">4</span>
+            <strong>You</strong> approve or request revisions — the loop iterates until sign-off.
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  'use strict';
+
+  const dropzone  = document.getElementById('pp-dropzone');
+  const fileInput = document.getElementById('pp-file-input');
+  const fileList  = document.getElementById('pp-file-list');
+  const fileItems = document.getElementById('pp-file-items');
+  const submitBtn = document.getElementById('pp-submit-btn');
+  const fileCount = document.getElementById('pp-file-count');
+
+  const ACCEPTED = ['.pdf', '.doc', '.docx', '.md'];
+
+  // Icon mapping per extension
+  const FILE_ICONS = {
+    pdf:  { cls: 'pdf',  icon: 'fa-file-pdf' },
+    doc:  { cls: 'doc',  icon: 'fa-file-word' },
+    docx: { cls: 'docx', icon: 'fa-file-word' },
+    md:   { cls: 'md',   icon: 'fa-file-alt' },
+  };
+
+  let selectedFiles = [];  // DataTransfer-managed list
+
+  function ext(filename) {
+    return filename.split('.').pop().toLowerCase();
+  }
+
+  function formatBytes(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  function isAccepted(file) {
+    const e = '.' + ext(file.name);
+    return ACCEPTED.includes(e);
+  }
+
+  function renderFiles() {
+    fileItems.innerHTML = '';
+    selectedFiles.forEach((file, idx) => {
+      const e   = ext(file.name);
+      const map = FILE_ICONS[e] || { cls: 'md', icon: 'fa-file' };
+
+      const item = document.createElement('div');
+      item.className = 'pp-file-item';
+      item.innerHTML = `
+        <div class="pp-file-icon ${map.cls}">
+          <i class="fas ${map.icon}"></i>
+        </div>
+        <div class="pp-file-meta">
+          <div class="pp-file-name" title="${file.name}">${file.name}</div>
+          <div class="pp-file-size">${formatBytes(file.size)}</div>
+        </div>
+        <button type="button" class="pp-file-remove" data-idx="${idx}"
+                title="Remove ${file.name}" aria-label="Remove ${file.name}">
+          <i class="fas fa-times"></i>
+        </button>
+      `;
+      fileItems.appendChild(item);
+    });
+
+    const count = selectedFiles.length;
+    fileList.hidden = count === 0;
+    submitBtn.disabled = count === 0;
+    fileCount.textContent = count > 0
+      ? `${count} file${count === 1 ? '' : 's'} selected`
+      : '';
+
+    // Sync to the real file input via DataTransfer
+    const dt = new DataTransfer();
+    selectedFiles.forEach(f => dt.items.add(f));
+    fileInput.files = dt.files;
+  }
+
+  function addFiles(incoming) {
+    const existing = new Set(selectedFiles.map(f => f.name + f.size));
+    incoming.forEach(f => {
+      if (isAccepted(f) && !existing.has(f.name + f.size)) {
+        selectedFiles.push(f);
+      }
+    });
+    renderFiles();
+  }
+
+  // Remove button delegation
+  fileItems.addEventListener('click', function (e) {
+    const btn = e.target.closest('.pp-file-remove');
+    if (!btn) return;
+    const idx = parseInt(btn.dataset.idx, 10);
+    selectedFiles.splice(idx, 1);
+    renderFiles();
+  });
+
+  // File input change
+  fileInput.addEventListener('change', function () {
+    addFiles(Array.from(this.files));
+  });
+
+  // Drag & drop
+  dropzone.addEventListener('dragover', function (e) {
+    e.preventDefault();
+    dropzone.classList.add('pp-drag-over');
+  });
+
+  dropzone.addEventListener('dragleave', function (e) {
+    if (!dropzone.contains(e.relatedTarget)) {
+      dropzone.classList.remove('pp-drag-over');
+    }
+  });
+
+  dropzone.addEventListener('drop', function (e) {
+    e.preventDefault();
+    dropzone.classList.remove('pp-drag-over');
+    addFiles(Array.from(e.dataTransfer.files));
+  });
+
+  // Keyboard accessibility: Enter / Space opens file picker
+  dropzone.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      fileInput.click();
+    }
+  });
+
+})();
+</script>
+{% endblock %}

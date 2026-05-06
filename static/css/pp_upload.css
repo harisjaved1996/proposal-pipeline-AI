@@ -1,0 +1,192 @@
+/* Proposal Pipeline AI — file upload form styles */
+
+/* ── Drop zone ───────────────────────────────────────── */
+.pp-dropzone {
+  border: 2px dashed #ced4da;
+  border-radius: 8px;
+  background: #fff;
+  padding: 48px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  position: relative;
+}
+
+.pp-dropzone:hover,
+.pp-dropzone.pp-drag-over {
+  border-color: var(--pp-primary);
+  background: #f0f6ff;
+}
+
+.pp-dropzone.pp-drag-over {
+  box-shadow: 0 0 0 4px rgba(0,123,255,.15);
+}
+
+.pp-dropzone-icon {
+  font-size: 3rem;
+  color: #ced4da;
+  margin-bottom: .75rem;
+  transition: color .2s;
+}
+
+.pp-dropzone:hover .pp-dropzone-icon,
+.pp-dropzone.pp-drag-over .pp-dropzone-icon {
+  color: var(--pp-primary);
+}
+
+.pp-dropzone-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #343a40;
+  margin-bottom: .25rem;
+}
+
+.pp-dropzone-hint {
+  font-size: .875rem;
+  color: #6c757d;
+}
+
+.pp-dropzone-types {
+  display: inline-flex;
+  gap: .5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.pp-type-badge {
+  background: #e9ecef;
+  color: #495057;
+  border-radius: 4px;
+  padding: 2px 10px;
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .03em;
+  font-family: "SFMono-Regular", Consolas, monospace;
+}
+
+/* Hidden real input, entire drop zone is clickable */
+#pp-file-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── File list ───────────────────────────────────────── */
+.pp-file-list {
+  margin-top: 1.25rem;
+}
+
+.pp-file-list-title {
+  font-size: .8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #6c757d;
+  margin-bottom: .5rem;
+}
+
+.pp-file-item {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .6rem .875rem;
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  margin-bottom: .4rem;
+  animation: pp-slide-in .15s ease;
+}
+
+@keyframes pp-slide-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.pp-file-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .95rem;
+  flex-shrink: 0;
+}
+
+.pp-file-icon.pdf  { background: #ffe5e5; color: #dc3545; }
+.pp-file-icon.doc  { background: #dce9ff; color: #0056b3; }
+.pp-file-icon.docx { background: #dce9ff; color: #0056b3; }
+.pp-file-icon.md   { background: #e6f4ea; color: #28a745; }
+
+.pp-file-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.pp-file-name {
+  font-size: .9rem;
+  font-weight: 600;
+  color: #212529;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pp-file-size {
+  font-size: .78rem;
+  color: #6c757d;
+}
+
+.pp-file-remove {
+  background: none;
+  border: none;
+  color: #adb5bd;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: color .15s, background .15s;
+  flex-shrink: 0;
+}
+
+.pp-file-remove:hover {
+  color: #dc3545;
+  background: #ffe5e5;
+}
+
+/* ── Error list ──────────────────────────────────────── */
+.pp-error-list {
+  margin-top: .75rem;
+}
+
+/* ── Submit row ──────────────────────────────────────── */
+.pp-submit-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.pp-submit-row .btn-primary {
+  min-width: 160px;
+}
+
+.pp-file-count-badge {
+  font-size: .85rem;
+  color: #6c757d;
+}
+
+/* ── Success state ───────────────────────────────────── */
+.pp-success-card {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.pp-success-icon {
+  font-size: 4rem;
+  color: var(--pp-success);
+  margin-bottom: 1rem;
+}
