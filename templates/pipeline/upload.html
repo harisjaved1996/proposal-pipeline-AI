@@ -2,7 +2,9 @@
 {% load static %}
 
 {% block title %}New Run{% endblock %}
+{% block page_icon %}fa-upload{% endblock %}
 {% block page_title %}New Pipeline Run{% endblock %}
+{% block page_sub %}Upload intake documents to begin the debrief analysis{% endblock %}
 {% block nav_upload_active %}active{% endblock %}
 
 {% block breadcrumb %}
@@ -14,58 +16,47 @@
 {% endblock %}
 
 {% block content %}
-
-{% if success %}
-<!-- ── Success state ─────────────────────────────────── -->
 <div class="row justify-content-center">
-  <div class="col-md-7">
-    <div class="card card-success elevation-2">
-      <div class="card-body pp-success-card">
-        <div class="pp-success-icon">
-          <i class="fas fa-check-circle"></i>
-        </div>
-        <h3 class="font-weight-bold mb-2">Files uploaded successfully</h3>
-        <p class="text-muted mb-4">
-          {{ file_count }} file{{ file_count|pluralize }} received.
-          The pipeline will begin processing shortly.
-        </p>
-        <a href="{% url 'pipeline:upload' %}" class="btn btn-outline-success btn-lg">
-          <i class="fas fa-plus mr-2"></i>Start Another Run
-        </a>
+  <div class="col-xl-7 col-lg-9 col-md-11">
+
+    <!-- ── Hero banner ─────────────────────────────────────────────────── -->
+    <div class="pp-upload-hero">
+      <div class="pp-hero-orbs"></div>
+      <div class="pp-hero-badge">
+        <i class="fas fa-robot"></i> Debrief Agent Ready
       </div>
+      <h2 class="pp-hero-title">
+        Turn transcripts into<br>
+        <span style="background:linear-gradient(135deg,#a5b4fc,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">structured proposals</span>
+      </h2>
+      <p class="pp-hero-sub">
+        Upload your client intake documents and discovery transcripts.<br>
+        The AI agents handle the rest.
+      </p>
     </div>
-  </div>
-</div>
 
-{% else %}
-<!-- ── Upload form ───────────────────────────────────── -->
-<div class="row justify-content-center">
-  <div class="col-md-8 col-lg-7">
-
-    <div class="card elevation-2">
-      <div class="card-header border-0 pb-0">
-        <h3 class="card-title font-weight-bold">
-          <i class="fas fa-file-import mr-2 text-primary"></i>Upload Intake Documents
+    <!-- ── Upload form card ────────────────────────────────────────────── -->
+    <div class="pp-upload-card">
+      <div class="pp-upload-card-header">
+        <h3>
+          <div class="pp-upload-card-icon"><i class="fas fa-file-import"></i></div>
+          Upload Intake Documents
         </h3>
-        <p class="text-muted mb-0 mt-1" style="font-size:.9rem;">
-          Attach the client intake docs and discovery transcripts to begin.
-        </p>
+        <p>Attach your client materials — accepted formats: PDF, Word, and Markdown</p>
       </div>
 
-      <div class="card-body pt-3">
+      <div class="pp-upload-card-body">
         <form id="pp-upload-form" method="post" enctype="multipart/form-data" novalidate>
           {% csrf_token %}
 
-          <!-- Form-level errors -->
-          {% if form.errors %}
-          <div class="pp-error-list">
-            {% for field, errors in form.errors.items %}
-              {% for error in errors %}
-              <div class="alert alert-danger alert-dismissible py-2">
-                <button type="button" class="close py-2" data-dismiss="alert">&times;</button>
-                <i class="icon fas fa-exclamation-circle"></i> {{ error }}
-              </div>
-              {% endfor %}
+          <!-- Errors -->
+          {% if errors %}
+          <div style="margin-bottom:16px;">
+            {% for error in errors %}
+            <div class="pp-error-alert">
+              <i class="fas fa-exclamation-circle"></i>
+              <span>{{ error }}</span>
+            </div>
             {% endfor %}
           </div>
           {% endif %}
@@ -85,7 +76,7 @@
               <i class="fas fa-cloud-upload-alt"></i>
             </div>
             <p class="pp-dropzone-title">Drop files here or click to browse</p>
-            <p class="pp-dropzone-hint">Drag &amp; drop one or more files onto this area</p>
+            <p class="pp-dropzone-hint">Supports multiple files at once</p>
             <div class="pp-dropzone-types">
               <span class="pp-type-badge">.pdf</span>
               <span class="pp-type-badge">.doc</span>
@@ -97,7 +88,7 @@
           <!-- File list -->
           <div class="pp-file-list" id="pp-file-list" hidden>
             <p class="pp-file-list-title">
-              <i class="fas fa-paperclip mr-1"></i>Attached files
+              <i class="fas fa-paperclip"></i> Attached files
             </p>
             <div id="pp-file-items"></div>
           </div>
@@ -107,50 +98,60 @@
             <button
               type="submit"
               id="pp-submit-btn"
-              class="btn btn-primary btn-lg"
+              class="pp-btn-run"
               disabled
             >
-              <i class="fas fa-play mr-2"></i>Run Pipeline
+              <i class="fas fa-play"></i>Run Pipeline
             </button>
-            <span class="pp-file-count-badge" id="pp-file-count"></span>
+            <div class="pp-file-count-label" id="pp-file-count-wrap" style="display:none;">
+              <span class="pp-file-count-num" id="pp-file-count">0</span>
+              file(s) ready
+            </div>
           </div>
         </form>
       </div>
     </div>
 
-    <!-- Info card -->
-    <div class="card card-outline card-info elevation-0">
-      <div class="card-header">
-        <h3 class="card-title">
-          <i class="fas fa-info-circle mr-2 text-info"></i>What happens next?
-        </h3>
+    <!-- ── Pipeline steps ──────────────────────────────────────────────── -->
+    <div class="pp-pipeline-steps">
+      <div class="pp-pipeline-steps-header">
+        <i class="fas fa-route" style="color:var(--pp-indigo);"></i>
+        <h4>What happens after you click Run?</h4>
       </div>
-      <div class="card-body p-0">
-        <ul class="list-group list-group-flush">
-          <li class="list-group-item border-0 py-2">
-            <span class="badge badge-primary mr-2">1</span>
-            <strong>Debrief Agent</strong> parses intake docs and transcripts into a 4×4 client matrix.
-          </li>
-          <li class="list-group-item border-0 py-2">
-            <span class="badge badge-primary mr-2">2</span>
-            <strong>Proposal Agent</strong> drafts a structured consulting proposal.
-          </li>
-          <li class="list-group-item border-0 py-2">
-            <span class="badge badge-primary mr-2">3</span>
-            <strong>Review Agent</strong> critiques the draft and translates feedback for refinement.
-          </li>
-          <li class="list-group-item border-0 py-2">
-            <span class="badge badge-primary mr-2">4</span>
-            <strong>You</strong> approve or request revisions — the loop iterates until sign-off.
-          </li>
-        </ul>
+      <div class="pp-step-list">
+        <div class="pp-step-item">
+          <div class="pp-step-num">1</div>
+          <div class="pp-step-text">
+            <strong>Debrief Agent</strong>
+            <span>Reads your documents and builds a structured 4×4 client matrix with confidence scoring and stakeholder profiles</span>
+          </div>
+        </div>
+        <div class="pp-step-item">
+          <div class="pp-step-num">2</div>
+          <div class="pp-step-text">
+            <strong>Proposal Agent</strong>
+            <span>Drafts a polished consulting proposal from the matrix — executive summary, approach, phases, pricing</span>
+          </div>
+        </div>
+        <div class="pp-step-item">
+          <div class="pp-step-num">3</div>
+          <div class="pp-step-text">
+            <strong>Review Agent</strong>
+            <span>Critiques the draft, flags gaps, and translates feedback into structured revision directives</span>
+          </div>
+        </div>
+        <div class="pp-step-item">
+          <div class="pp-step-num">4</div>
+          <div class="pp-step-text">
+            <strong>Human Gate</strong>
+            <span>You review and approve — or request revisions. The loop runs until you sign off</span>
+          </div>
+        </div>
       </div>
     </div>
 
   </div>
 </div>
-{% endif %}
-
 {% endblock %}
 
 {% block extra_js %}
@@ -163,11 +164,11 @@
   const fileList  = document.getElementById('pp-file-list');
   const fileItems = document.getElementById('pp-file-items');
   const submitBtn = document.getElementById('pp-submit-btn');
-  const fileCount = document.getElementById('pp-file-count');
+  const countWrap = document.getElementById('pp-file-count-wrap');
+  const countEl   = document.getElementById('pp-file-count');
 
   const ACCEPTED = ['.pdf', '.doc', '.docx', '.md'];
 
-  // Icon mapping per extension
   const FILE_ICONS = {
     pdf:  { cls: 'pdf',  icon: 'fa-file-pdf' },
     doc:  { cls: 'doc',  icon: 'fa-file-word' },
@@ -175,108 +176,85 @@
     md:   { cls: 'md',   icon: 'fa-file-alt' },
   };
 
-  let selectedFiles = [];  // DataTransfer-managed list
+  let selectedFiles = [];
 
-  function ext(filename) {
-    return filename.split('.').pop().toLowerCase();
+  function ext(name) { return name.split('.').pop().toLowerCase(); }
+
+  function fmtBytes(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+    return (b / 1048576).toFixed(1) + ' MB';
   }
 
-  function formatBytes(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-  }
+  function isOk(f) { return ACCEPTED.includes('.' + ext(f.name)); }
 
-  function isAccepted(file) {
-    const e = '.' + ext(file.name);
-    return ACCEPTED.includes(e);
-  }
-
-  function renderFiles() {
+  function sync() {
     fileItems.innerHTML = '';
     selectedFiles.forEach((file, idx) => {
       const e   = ext(file.name);
       const map = FILE_ICONS[e] || { cls: 'md', icon: 'fa-file' };
 
-      const item = document.createElement('div');
-      item.className = 'pp-file-item';
-      item.innerHTML = `
-        <div class="pp-file-icon ${map.cls}">
-          <i class="fas ${map.icon}"></i>
-        </div>
+      const el = document.createElement('div');
+      el.className = 'pp-file-item';
+      el.innerHTML = `
+        <div class="pp-file-icon ${map.cls}"><i class="fas ${map.icon}"></i></div>
         <div class="pp-file-meta">
           <div class="pp-file-name" title="${file.name}">${file.name}</div>
-          <div class="pp-file-size">${formatBytes(file.size)}</div>
+          <div class="pp-file-size">${fmtBytes(file.size)}</div>
         </div>
-        <button type="button" class="pp-file-remove" data-idx="${idx}"
-                title="Remove ${file.name}" aria-label="Remove ${file.name}">
+        <button type="button" class="pp-file-remove" data-idx="${idx}" title="Remove">
           <i class="fas fa-times"></i>
-        </button>
-      `;
-      fileItems.appendChild(item);
+        </button>`;
+      fileItems.appendChild(el);
     });
 
-    const count = selectedFiles.length;
-    fileList.hidden = count === 0;
-    submitBtn.disabled = count === 0;
-    fileCount.textContent = count > 0
-      ? `${count} file${count === 1 ? '' : 's'} selected`
-      : '';
+    const n = selectedFiles.length;
+    fileList.hidden = n === 0;
+    submitBtn.disabled = n === 0;
+    countWrap.style.display = n > 0 ? 'flex' : 'none';
+    countEl.textContent = n;
 
-    // Sync to the real file input via DataTransfer
     const dt = new DataTransfer();
     selectedFiles.forEach(f => dt.items.add(f));
     fileInput.files = dt.files;
   }
 
-  function addFiles(incoming) {
-    const existing = new Set(selectedFiles.map(f => f.name + f.size));
-    incoming.forEach(f => {
-      if (isAccepted(f) && !existing.has(f.name + f.size)) {
-        selectedFiles.push(f);
-      }
-    });
-    renderFiles();
+  function add(incoming) {
+    const seen = new Set(selectedFiles.map(f => f.name + f.size));
+    incoming.filter(f => isOk(f) && !seen.has(f.name + f.size))
+            .forEach(f => selectedFiles.push(f));
+    sync();
   }
 
-  // Remove button delegation
-  fileItems.addEventListener('click', function (e) {
+  fileItems.addEventListener('click', e => {
     const btn = e.target.closest('.pp-file-remove');
     if (!btn) return;
-    const idx = parseInt(btn.dataset.idx, 10);
-    selectedFiles.splice(idx, 1);
-    renderFiles();
+    selectedFiles.splice(+btn.dataset.idx, 1);
+    sync();
   });
 
-  // File input change
-  fileInput.addEventListener('change', function () {
-    addFiles(Array.from(this.files));
-  });
+  fileInput.addEventListener('change', function() { add(Array.from(this.files)); });
 
-  // Drag & drop
-  dropzone.addEventListener('dragover', function (e) {
+  dropzone.addEventListener('dragover', e => {
     e.preventDefault();
     dropzone.classList.add('pp-drag-over');
   });
-
-  dropzone.addEventListener('dragleave', function (e) {
-    if (!dropzone.contains(e.relatedTarget)) {
-      dropzone.classList.remove('pp-drag-over');
-    }
+  dropzone.addEventListener('dragleave', e => {
+    if (!dropzone.contains(e.relatedTarget)) dropzone.classList.remove('pp-drag-over');
   });
-
-  dropzone.addEventListener('drop', function (e) {
+  dropzone.addEventListener('drop', e => {
     e.preventDefault();
     dropzone.classList.remove('pp-drag-over');
-    addFiles(Array.from(e.dataTransfer.files));
+    add(Array.from(e.dataTransfer.files));
+  });
+  dropzone.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
   });
 
-  // Keyboard accessibility: Enter / Space opens file picker
-  dropzone.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      fileInput.click();
-    }
+  /* Loading state on submit */
+  document.getElementById('pp-upload-form').addEventListener('submit', function() {
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting…';
+    submitBtn.disabled = true;
   });
 
 })();

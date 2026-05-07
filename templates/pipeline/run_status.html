@@ -1,0 +1,431 @@
+{% extends "adminlte/base.html" %}
+{% load static %}
+
+{% block title %}Run {{ run.id|truncatechars:8 }}{% endblock %}
+{% block page_icon %}fa-robot{% endblock %}
+{% block page_title %}Debrief Agent{% endblock %}
+{% block page_sub %}Run {{ run.id }} · {{ run.file_paths|length }} document{{ run.file_paths|length|pluralize }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'pipeline:upload' %}">New Run</a></li>
+<li class="breadcrumb-item active">{{ run.id|truncatechars:12 }}</li>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pp_run_status.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Run metadata strip ──────────────────────────────────────────────── -->
+<div class="pp-run-meta-strip">
+
+  <div class="pp-meta-card">
+    <div class="pp-meta-icon pp-meta-icon-id">
+      <i class="fas fa-fingerprint"></i>
+    </div>
+    <div style="min-width:0;">
+      <div class="pp-meta-label">Run ID</div>
+      <div class="pp-meta-value" title="{{ run.id }}">{{ run.id }}</div>
+    </div>
+  </div>
+
+  <div class="pp-meta-card">
+    <div class="pp-meta-icon pp-meta-icon-files">
+      <i class="fas fa-file-alt"></i>
+    </div>
+    <div>
+      <div class="pp-meta-label">Documents</div>
+      <div class="pp-meta-value">{{ run.file_paths|length }} file{{ run.file_paths|length|pluralize }}</div>
+    </div>
+  </div>
+
+  <div class="pp-meta-card">
+    <div class="pp-meta-icon pp-meta-icon-status">
+      <i class="fas fa-tasks"></i>
+    </div>
+    <div>
+      <div class="pp-meta-label">Status</div>
+      <div id="pp-status-badge" class="pp-status-badge pp-status-{{ run.status }}">
+        {% if run.status == "pending" %}<i class="fas fa-clock"></i> Pending
+        {% elif run.status == "running" %}<i class="fas fa-spinner fa-spin"></i> Running
+        {% elif run.status == "complete" %}<i class="fas fa-check-circle"></i> Complete
+        {% elif run.status == "failed" %}<i class="fas fa-times-circle"></i> Failed
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Agent Log ───────────────────────────────────────────────────────── -->
+<div class="pp-log-card">
+  <div class="pp-log-card-header">
+    <div class="pp-log-card-title">
+      <div class="pp-log-card-icon"><i class="fas fa-terminal"></i></div>
+      Agent Log
+    </div>
+    <button class="pp-btn-clear" id="pp-clear-log">
+      <i class="fas fa-trash-alt mr-1"></i>Clear
+    </button>
+  </div>
+
+  <div class="pp-terminal">
+    <div class="pp-terminal-bar">
+      <span class="pp-dot pp-dot-red"></span>
+      <span class="pp-dot pp-dot-yellow"></span>
+      <span class="pp-dot pp-dot-green"></span>
+      <span class="pp-terminal-title">debrief-agent · run/{{ run.id }}</span>
+      <span class="pp-terminal-status running" id="pp-terminal-status">connecting…</span>
+    </div>
+    <div class="pp-terminal-body" id="pp-log"></div>
+  </div>
+</div>
+
+<!-- ── Raw Model Output ────────────────────────────────────────────────── -->
+<div class="pp-raw-card" id="pp-raw-section">
+  <div class="pp-raw-card-header" id="pp-raw-toggle">
+    <div class="pp-raw-title">
+      <i class="fas fa-code" style="color:var(--pp-slate-400);"></i>
+      Raw Model Output
+      <span class="pp-raw-sub">exact JSON returned by the AI model</span>
+    </div>
+    <i class="fas fa-chevron-down" style="color:var(--pp-slate-400); font-size:.8rem;" id="pp-raw-chevron"></i>
+  </div>
+  <div class="pp-raw-body" id="pp-raw-body">
+    <pre id="pp-raw-output"></pre>
+  </div>
+</div>
+
+<!-- ── Stakeholders ────────────────────────────────────────────────────── -->
+<div id="pp-stakeholders-section">
+  <div class="pp-stakeholders-card">
+    <div class="pp-stakeholders-header">
+      <div class="pp-stakeholders-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <div>
+        <h3>Stakeholders</h3>
+        <p>Named individuals identified in the uploaded documents</p>
+      </div>
+      <div class="pp-sh-count-pill" id="pp-sh-count">0 people</div>
+    </div>
+    <div class="pp-stakeholder-grid" id="pp-stakeholder-grid"></div>
+  </div>
+</div>
+
+<!-- ── Matrix Results ─────────────────────────────────────────────────── -->
+<div id="pp-matrix-section">
+
+  <div class="pp-results-header">
+    <div class="pp-results-title">
+      <div class="pp-results-icon"><i class="fas fa-table"></i></div>
+      Client Matrix
+    </div>
+    <div class="pp-results-actions">
+      <a id="pp-download-btn" href="#" class="pp-btn-download">
+        <i class="fas fa-download"></i> Download JSON
+      </a>
+      <a href="{% url 'pipeline:upload' %}" class="pp-btn-new-run">
+        <i class="fas fa-plus"></i> New Run
+      </a>
+    </div>
+  </div>
+
+  <div class="pp-matrix-accordion" id="pp-accordion">
+    {% for dim_key, dim_label, dim_cls, dim_icon in dimensions %}
+    <div class="pp-matrix-dim-card">
+      <button
+        class="pp-dim-header"
+        data-toggle="collapse"
+        data-target="#collapse-{{ dim_key }}"
+        aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+        aria-controls="collapse-{{ dim_key }}"
+      >
+        <span class="pp-dim-pill pp-dim-pill-{{ dim_key }}">
+          <i class="fas {{ dim_icon }}"></i>
+        </span>
+        <span class="pp-dim-name">{{ dim_label }}</span>
+        <span class="pp-dim-count" id="badge-{{ dim_key }}">–</span>
+        <i class="fas fa-chevron-down pp-dim-chevron"></i>
+      </button>
+
+      <div id="collapse-{{ dim_key }}"
+           class="collapse {% if forloop.first %}show{% endif %}">
+        <div class="pp-col-grid" id="cols-{{ dim_key }}">
+          <!-- filled by JS -->
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+(function () {
+  'use strict';
+
+  /* ── Constants ──────────────────────────────────────────────────────── */
+  const STREAM_URL = "{% url 'pipeline:run_stream' run_id=run.id %}";
+
+  const DIMS = [
+    { key: 'business',    label: 'Business' },
+    { key: 'technical',   label: 'Technical' },
+    { key: 'operational', label: 'Operational' },
+    { key: 'strategic',   label: 'Strategic' },
+  ];
+
+  const COLS = [
+    { key: 'pain_points',      label: 'Pain Points' },
+    { key: 'desired_state',    label: 'Desired State' },
+    { key: 'success_criteria', label: 'Success Criteria' },
+    { key: 'risks_unknowns',   label: 'Risks & Unknowns' },
+  ];
+
+  const CONF_BADGE = {
+    high:         '<span class="badge badge-success">High</span>',
+    medium:       '<span class="badge badge-warning">Medium</span>',
+    low:          '<span class="badge badge-secondary">Low</span>',
+    contradicted: '<span class="badge badge-danger">Contradicted</span>',
+  };
+
+  const LOG_META = {
+    step:    { prefix: '▸', cls: 'pp-log-step' },
+    info:    { prefix: '·', cls: 'pp-log-info' },
+    success: { prefix: '✓', cls: 'pp-log-success' },
+    warning: { prefix: '⚠', cls: 'pp-log-warning' },
+    error:   { prefix: '✗', cls: 'pp-log-error' },
+    cached:  { prefix: '⚡', cls: 'pp-log-cached' },
+    complete:{ prefix: '★', cls: 'pp-log-success' },
+  };
+
+  /* ── DOM refs ───────────────────────────────────────────────────────── */
+  const logEl           = document.getElementById('pp-log');
+  const statusBadge     = document.getElementById('pp-status-badge');
+  const termStatus      = document.getElementById('pp-terminal-status');
+  const matrixSec       = document.getElementById('pp-matrix-section');
+  const stakeholderSec  = document.getElementById('pp-stakeholders-section');
+  const stakeholderGrid = document.getElementById('pp-stakeholder-grid');
+  const shCount         = document.getElementById('pp-sh-count');
+  const rawSec          = document.getElementById('pp-raw-section');
+  const rawBody         = document.getElementById('pp-raw-body');
+  const rawOutput       = document.getElementById('pp-raw-output');
+  const rawToggle       = document.getElementById('pp-raw-toggle');
+  const rawChevron      = document.getElementById('pp-raw-chevron');
+  const downloadBtn     = document.getElementById('pp-download-btn');
+  const clearBtn        = document.getElementById('pp-clear-log');
+
+  let spinnerLine = null;
+  let matrixData  = null;
+
+  /* ── Raw output toggle ──────────────────────────────────────────────── */
+  rawToggle.addEventListener('click', function() {
+    const open = rawBody.style.display === 'block';
+    rawBody.style.display = open ? 'none' : 'block';
+    rawChevron.style.transform = open ? '' : 'rotate(180deg)';
+  });
+
+  /* ── Log helpers ────────────────────────────────────────────────────── */
+  function removeSpinner() {
+    if (spinnerLine) { spinnerLine.remove(); spinnerLine = null; }
+  }
+
+  function appendLog(type, message) {
+    removeSpinner();
+    const meta = LOG_META[type] || { prefix: '·', cls: 'pp-log-info' };
+    const line = document.createElement('p');
+    line.className = `pp-log-line ${meta.cls}`;
+    line.innerHTML =
+      `<span class="pp-log-prefix">${meta.prefix}</span>` +
+      `<span class="pp-log-text">${escHtml(message)}</span>`;
+    logEl.appendChild(line);
+
+    if (type === 'step' || type === 'info') {
+      spinnerLine = document.createElement('p');
+      spinnerLine.className = 'pp-spinner-line';
+      spinnerLine.innerHTML = '<span class="pp-spinner"></span><span style="color:#484f58">Processing…</span>';
+      logEl.appendChild(spinnerLine);
+    }
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  /* ── Status badge ───────────────────────────────────────────────────── */
+  function setStatus(status) {
+    const labels = {
+      running:  '<i class="fas fa-spinner fa-spin"></i> Running',
+      complete: '<i class="fas fa-check-circle"></i> Complete',
+      failed:   '<i class="fas fa-times-circle"></i> Failed',
+      cached:   '<i class="fas fa-bolt"></i> Cached',
+    };
+    statusBadge.className = `pp-status-badge pp-status-${status}`;
+    statusBadge.innerHTML = labels[status] || labels.running;
+    termStatus.className = `pp-terminal-status ${status}`;
+    termStatus.textContent = status;
+  }
+
+  /* ── Stakeholders ───────────────────────────────────────────────────── */
+  function renderStakeholders(list) {
+    if (!list || !list.length) return;
+    shCount.textContent = list.length + (list.length === 1 ? ' person' : ' people');
+    stakeholderGrid.innerHTML = '';
+
+    list.forEach((sh, idx) => {
+      const initials = sh.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+      const stanceCls = sh.stance || 'unknown';
+      const card = document.createElement('div');
+      card.className = `pp-stakeholder-card ${stanceCls}`;
+      card.innerHTML = `
+        <div class="pp-sh-header">
+          <div class="pp-sh-avatar pp-sh-avatar-${idx % 8}">${initials}</div>
+          <div class="pp-sh-info">
+            <div class="pp-sh-name">${escHtml(sh.name)}</div>
+            <div class="pp-sh-title">${escHtml(sh.title)}</div>
+          </div>
+        </div>
+        <div class="pp-sh-badges">
+          <span class="pp-sh-stance ${stanceCls}">${escHtml(sh.stance)}</span>
+          <span class="pp-sh-influence"><i class="fas fa-signal"></i>${escHtml(sh.influence)} influence</span>
+        </div>
+        <div class="pp-sh-role"><i class="fas fa-sitemap"></i>${escHtml(sh.role_in_decision)}</div>
+        <div class="pp-sh-concern-label">Key Concern</div>
+        <div class="pp-sh-concern">${escHtml(sh.key_concern)}</div>
+        <div class="pp-sh-quote">"${escHtml(sh.source_excerpt)}"</div>
+      `;
+      stakeholderGrid.appendChild(card);
+    });
+    stakeholderSec.style.display = 'block';
+  }
+
+  /* ── Matrix ─────────────────────────────────────────────────────────── */
+  function renderMatrix(matrix) {
+    matrixData = matrix;
+    DIMS.forEach(dim => {
+      const dimData = matrix[dim.key];
+      const colsEl  = document.getElementById(`cols-${dim.key}`);
+      let total = 0;
+      colsEl.innerHTML = '';
+      COLS.forEach(col => {
+        const items = dimData[col.key] || [];
+        total += items.length;
+        const card = document.createElement('div');
+        card.className = 'pp-col-card';
+        card.innerHTML =
+          `<div class="pp-col-header">${escHtml(col.label)}</div>` +
+          `<div class="pp-col-body">${renderItems(items)}</div>`;
+        colsEl.appendChild(card);
+      });
+      const badge = document.getElementById(`badge-${dim.key}`);
+      if (badge) badge.textContent = `${total} items`;
+    });
+
+    const blob = new Blob([JSON.stringify(matrix, null, 2)], { type: 'application/json' });
+    downloadBtn.href = URL.createObjectURL(blob);
+    downloadBtn.download = `client_matrix_{{ run.id }}.json`;
+
+    matrixSec.style.display = 'block';
+    setTimeout(() => matrixSec.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+  }
+
+  function renderItems(items) {
+    if (!items.length) return '<p style="color:var(--pp-slate-400);font-size:.8rem;padding:4px 0;">No data extracted.</p>';
+    return items.map(item => `
+      <div class="pp-matrix-item">
+        <div class="pp-item-row">
+          ${CONF_BADGE[item.confidence] || ''}
+          <span class="pp-item-statement">${escHtml(item.statement)}</span>
+        </div>
+        <div class="pp-item-source">"${escHtml(item.source_excerpt)}"</div>
+        ${item.contradiction_note
+          ? `<div class="pp-item-contradiction"><i class="fas fa-exclamation-triangle"></i> ${escHtml(item.contradiction_note)}</div>`
+          : ''}
+      </div>`).join('');
+  }
+
+  /* ── SSE ────────────────────────────────────────────────────────────── */
+  const es = new EventSource(STREAM_URL);
+
+  es.onopen = function () {
+    termStatus.textContent = 'running';
+    clearBtn.style.display = 'inline-block';
+  };
+
+  es.onmessage = function (evt) {
+    let payload;
+    try { payload = JSON.parse(evt.data); } catch { return; }
+    const { type, message, matrix } = payload;
+
+    switch (type) {
+      case 'step':
+      case 'info':
+      case 'warning':
+      case 'error':
+      case 'cached':
+        appendLog(type, message || '');
+        break;
+
+      case 'success':
+        appendLog('success', message || '');
+        break;
+
+      case 'raw_output':
+        if (payload.raw) {
+          try { rawOutput.textContent = JSON.stringify(JSON.parse(payload.raw), null, 2); }
+          catch { rawOutput.textContent = payload.raw; }
+          rawSec.style.display = 'block';
+          appendLog('info', 'Raw model output ready — see "Raw Model Output" card below');
+        }
+        break;
+
+      case 'complete':
+        removeSpinner();
+        appendLog('complete', message || 'Agent finished.');
+        setStatus('complete');
+        es.close();
+        if (payload.raw_output) {
+          try { rawOutput.textContent = JSON.stringify(JSON.parse(payload.raw_output), null, 2); }
+          catch { rawOutput.textContent = payload.raw_output; }
+          rawSec.style.display = 'block';
+        }
+        if (matrix) {
+          renderStakeholders(matrix.stakeholders || []);
+          renderMatrix(matrix);
+        }
+        break;
+
+      default:
+        appendLog('info', message || JSON.stringify(payload));
+    }
+
+    if (type === 'error') {
+      setStatus('failed');
+      removeSpinner();
+      es.close();
+    }
+    if (type === 'cached') setStatus('cached');
+  };
+
+  es.onerror = function () {
+    if (es.readyState === EventSource.CLOSED) return;
+    removeSpinner();
+    appendLog('error', 'Connection lost. Server may have closed the stream.');
+    setStatus('failed');
+    es.close();
+  };
+
+  /* ── Clear log ──────────────────────────────────────────────────────── */
+  clearBtn.addEventListener('click', function () { logEl.innerHTML = ''; });
+
+})();
+</script>
+{% endblock %}
