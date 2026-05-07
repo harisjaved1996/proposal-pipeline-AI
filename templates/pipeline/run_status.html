@@ -3,7 +3,7 @@
 
 {% block title %}Run {{ run.id|truncatechars:8 }}{% endblock %}
 {% block page_icon %}fa-robot{% endblock %}
-{% block page_title %}Debrief Agent{% endblock %}
+{% block page_title %}Pipeline Run{% endblock %}
 {% block page_sub %}Run {{ run.id }} · {{ run.file_paths|length }} document{{ run.file_paths|length|pluralize }}{% endblock %}
 
 {% block breadcrumb %}
@@ -58,109 +58,239 @@
 
 </div>
 
-<!-- ── Agent Log ───────────────────────────────────────────────────────── -->
-<div class="pp-log-card">
-  <div class="pp-log-card-header">
-    <div class="pp-log-card-title">
-      <div class="pp-log-card-icon"><i class="fas fa-terminal"></i></div>
-      Agent Log
-    </div>
-    <button class="pp-btn-clear" id="pp-clear-log">
-      <i class="fas fa-trash-alt mr-1"></i>Clear
-    </button>
-  </div>
+<!-- ── Agent tab bar ──────────────────────────────────────────────────── -->
+<ul class="nav pp-agent-tabs mb-4" id="pp-agent-tabs" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="tab-debrief-link"
+       data-toggle="tab" href="#tab-debrief" role="tab"
+       aria-controls="tab-debrief" aria-selected="true">
+      <i class="fas fa-robot mr-2"></i>Debrief Agent
+      <span class="pp-tab-status-dot" id="tab-debrief-dot"></span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="tab-proposal-link"
+       data-toggle="tab" href="#tab-proposal" role="tab"
+       aria-controls="tab-proposal" aria-selected="false">
+      <i class="fas fa-file-contract mr-2"></i>Proposal Agent
+      <span class="pp-tab-status-dot" id="tab-proposal-dot"></span>
+    </a>
+  </li>
+</ul>
 
-  <div class="pp-terminal">
-    <div class="pp-terminal-bar">
-      <span class="pp-dot pp-dot-red"></span>
-      <span class="pp-dot pp-dot-yellow"></span>
-      <span class="pp-dot pp-dot-green"></span>
-      <span class="pp-terminal-title">debrief-agent · run/{{ run.id }}</span>
-      <span class="pp-terminal-status running" id="pp-terminal-status">connecting…</span>
-    </div>
-    <div class="pp-terminal-body" id="pp-log"></div>
-  </div>
-</div>
+<!-- ── Tab content ────────────────────────────────────────────────────── -->
+<div class="tab-content" id="pp-tab-content">
 
-<!-- ── Raw Model Output ────────────────────────────────────────────────── -->
-<div class="pp-raw-card" id="pp-raw-section">
-  <div class="pp-raw-card-header" id="pp-raw-toggle">
-    <div class="pp-raw-title">
-      <i class="fas fa-code" style="color:var(--pp-slate-400);"></i>
-      Raw Model Output
-      <span class="pp-raw-sub">exact JSON returned by the AI model</span>
-    </div>
-    <i class="fas fa-chevron-down" style="color:var(--pp-slate-400); font-size:.8rem;" id="pp-raw-chevron"></i>
-  </div>
-  <div class="pp-raw-body" id="pp-raw-body">
-    <pre id="pp-raw-output"></pre>
-  </div>
-</div>
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!-- TAB 1 — Debrief Agent                                               -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <div class="tab-pane fade show active" id="tab-debrief" role="tabpanel" aria-labelledby="tab-debrief-link">
 
-<!-- ── Stakeholders ────────────────────────────────────────────────────── -->
-<div id="pp-stakeholders-section">
-  <div class="pp-stakeholders-card">
-    <div class="pp-stakeholders-header">
-      <div class="pp-stakeholders-icon">
-        <i class="fas fa-users"></i>
+    <!-- Debrief terminal -->
+    <div class="pp-log-card">
+      <div class="pp-log-card-header">
+        <div class="pp-log-card-title">
+          <div class="pp-log-card-icon"><i class="fas fa-terminal"></i></div>
+          Debrief Agent
+        </div>
+        <button class="pp-btn-clear" id="pp-clear-log">
+          <i class="fas fa-trash-alt mr-1"></i>Clear
+        </button>
       </div>
-      <div>
-        <h3>Stakeholders</h3>
-        <p>Named individuals identified in the uploaded documents</p>
+      <div class="pp-terminal">
+        <div class="pp-terminal-bar">
+          <span class="pp-dot pp-dot-red"></span>
+          <span class="pp-dot pp-dot-yellow"></span>
+          <span class="pp-dot pp-dot-green"></span>
+          <span class="pp-terminal-title">debrief-agent · run/{{ run.id }}</span>
+          <span class="pp-terminal-status running" id="pp-terminal-status">connecting…</span>
+        </div>
+        <div class="pp-terminal-body" id="pp-log"></div>
       </div>
-      <div class="pp-sh-count-pill" id="pp-sh-count">0 people</div>
     </div>
-    <div class="pp-stakeholder-grid" id="pp-stakeholder-grid"></div>
-  </div>
-</div>
 
-<!-- ── Matrix Results ─────────────────────────────────────────────────── -->
-<div id="pp-matrix-section">
-
-  <div class="pp-results-header">
-    <div class="pp-results-title">
-      <div class="pp-results-icon"><i class="fas fa-table"></i></div>
-      Client Matrix
+    <!-- Raw Model Output -->
+    <div class="pp-raw-card" id="pp-raw-section">
+      <div class="pp-raw-card-header" id="pp-raw-toggle">
+        <div class="pp-raw-title">
+          <i class="fas fa-code" style="color:var(--pp-slate-400);"></i>
+          Raw Model Output
+          <span class="pp-raw-sub">exact JSON returned by the AI model</span>
+        </div>
+        <i class="fas fa-chevron-down" style="color:var(--pp-slate-400); font-size:.8rem;" id="pp-raw-chevron"></i>
+      </div>
+      <div class="pp-raw-body" id="pp-raw-body">
+        <pre id="pp-raw-output"></pre>
+      </div>
     </div>
-    <div class="pp-results-actions">
-      <a id="pp-download-btn" href="#" class="pp-btn-download">
-        <i class="fas fa-download"></i> Download JSON
-      </a>
-      <a href="{% url 'pipeline:upload' %}" class="pp-btn-new-run">
-        <i class="fas fa-plus"></i> New Run
-      </a>
+
+    <!-- Stakeholders -->
+    <div id="pp-stakeholders-section">
+      <div class="pp-stakeholders-card">
+        <div class="pp-stakeholders-header">
+          <div class="pp-stakeholders-icon"><i class="fas fa-users"></i></div>
+          <div>
+            <h3>Stakeholders</h3>
+            <p>Named individuals identified in the uploaded documents</p>
+          </div>
+          <div class="pp-sh-count-pill" id="pp-sh-count">0 people</div>
+        </div>
+        <div class="pp-stakeholder-grid" id="pp-stakeholder-grid"></div>
+      </div>
     </div>
-  </div>
 
-  <div class="pp-matrix-accordion" id="pp-accordion">
-    {% for dim_key, dim_label, dim_cls, dim_icon in dimensions %}
-    <div class="pp-matrix-dim-card">
-      <button
-        class="pp-dim-header"
-        data-toggle="collapse"
-        data-target="#collapse-{{ dim_key }}"
-        aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
-        aria-controls="collapse-{{ dim_key }}"
-      >
-        <span class="pp-dim-pill pp-dim-pill-{{ dim_key }}">
-          <i class="fas {{ dim_icon }}"></i>
-        </span>
-        <span class="pp-dim-name">{{ dim_label }}</span>
-        <span class="pp-dim-count" id="badge-{{ dim_key }}">–</span>
-        <i class="fas fa-chevron-down pp-dim-chevron"></i>
-      </button>
+    <!-- Matrix -->
+    <div id="pp-matrix-section">
+      <div class="pp-results-header">
+        <div class="pp-results-title">
+          <div class="pp-results-icon"><i class="fas fa-table"></i></div>
+          Client Matrix
+        </div>
+        <div class="pp-results-actions">
+          <a id="pp-download-btn" href="#" class="pp-btn-download">
+            <i class="fas fa-download"></i> Download JSON
+          </a>
+          <a href="{% url 'pipeline:upload' %}" class="pp-btn-new-run">
+            <i class="fas fa-plus"></i> New Run
+          </a>
+        </div>
+      </div>
 
-      <div id="collapse-{{ dim_key }}"
-           class="collapse {% if forloop.first %}show{% endif %}">
-        <div class="pp-col-grid" id="cols-{{ dim_key }}">
-          <!-- filled by JS -->
+      <div class="pp-matrix-accordion" id="pp-accordion">
+        {% for dim_key, dim_label, dim_cls, dim_icon in dimensions %}
+        <div class="pp-matrix-dim-card">
+          <button class="pp-dim-header"
+            data-toggle="collapse"
+            data-target="#collapse-{{ dim_key }}"
+            aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+            aria-controls="collapse-{{ dim_key }}">
+            <span class="pp-dim-pill pp-dim-pill-{{ dim_key }}">
+              <i class="fas {{ dim_icon }}"></i>
+            </span>
+            <span class="pp-dim-name">{{ dim_label }}</span>
+            <span class="pp-dim-count" id="badge-{{ dim_key }}">–</span>
+            <i class="fas fa-chevron-down pp-dim-chevron"></i>
+          </button>
+          <div id="collapse-{{ dim_key }}" class="collapse {% if forloop.first %}show{% endif %}">
+            <div class="pp-col-grid" id="cols-{{ dim_key }}"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div><!-- /#tab-debrief -->
+
+
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!-- TAB 2 — Proposal Agent                                              -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <div class="tab-pane fade" id="tab-proposal" role="tabpanel" aria-labelledby="tab-proposal-link">
+
+    <!-- Idle placeholder — shown while debrief hasn't finished -->
+    <div class="pp-proposal-idle-state" id="pp-proposal-idle">
+      <div class="pp-proposal-idle-icon"><i class="fas fa-hourglass-half"></i></div>
+      <div class="pp-proposal-idle-title">Proposal Agent Waiting</div>
+      <div class="pp-proposal-idle-sub">Proposal generation will begin automatically once the Debrief Agent finishes.</div>
+    </div>
+
+    <!-- Proposal terminal (hidden until started) -->
+    <div class="pp-log-card pp-log-card-proposal" id="pp-proposal-log-card" style="display:none;">
+      <div class="pp-log-card-header">
+        <div class="pp-log-card-title">
+          <div class="pp-log-card-icon"><i class="fas fa-terminal"></i></div>
+          Proposal Agent
+        </div>
+        <button class="pp-btn-clear" id="pp-clear-proposal-log">
+          <i class="fas fa-trash-alt mr-1"></i>Clear
+        </button>
+      </div>
+      <div class="pp-terminal">
+        <div class="pp-terminal-bar">
+          <span class="pp-dot pp-dot-red"></span>
+          <span class="pp-dot pp-dot-yellow"></span>
+          <span class="pp-dot pp-dot-green"></span>
+          <span class="pp-terminal-title">proposal-agent · run/{{ run.id }}</span>
+          <span class="pp-terminal-status" id="pp-proposal-terminal-status">idle</span>
+        </div>
+        <div class="pp-terminal-body" id="pp-proposal-log"></div>
+      </div>
+    </div>
+
+    <!-- Proposal raw output (collapsible, hidden until received) -->
+    <div class="pp-raw-card" id="pp-proposal-raw-section" style="display:none;">
+      <div class="pp-raw-card-header" id="pp-proposal-raw-toggle">
+        <div class="pp-raw-title">
+          <i class="fas fa-code" style="color:var(--pp-slate-400);"></i>
+          Raw Proposal Output
+          <span class="pp-raw-sub">exact JSON returned by the AI model</span>
+        </div>
+        <i class="fas fa-chevron-down" style="color:var(--pp-slate-400); font-size:.8rem;" id="pp-proposal-raw-chevron"></i>
+      </div>
+      <div class="pp-raw-body" id="pp-proposal-raw-body">
+        <pre id="pp-proposal-raw-output"></pre>
+      </div>
+    </div>
+
+    <!-- Proposal summary strip (hidden until complete) -->
+    <div id="pp-proposal-summary-section" style="display:none;">
+      <div class="pp-run-meta-strip">
+        <div class="pp-meta-card">
+          <div class="pp-meta-icon" style="background:linear-gradient(135deg,var(--pp-violet),var(--pp-indigo));">
+            <i class="fas fa-building"></i>
+          </div>
+          <div>
+            <div class="pp-meta-label">Client</div>
+            <div class="pp-meta-value" id="pp-proposal-client">—</div>
+          </div>
+        </div>
+        <div class="pp-meta-card">
+          <div class="pp-meta-icon" style="background:linear-gradient(135deg,var(--pp-sky),#0284c7);">
+            <i class="fas fa-handshake"></i>
+          </div>
+          <div>
+            <div class="pp-meta-label">Engagement Type</div>
+            <div class="pp-meta-value" id="pp-proposal-engagement">—</div>
+          </div>
+        </div>
+        <div class="pp-meta-card">
+          <div class="pp-meta-icon" style="background:linear-gradient(135deg,var(--pp-emerald),#059669);">
+            <i class="fas fa-calendar-alt"></i>
+          </div>
+          <div>
+            <div class="pp-meta-label">Estimated Duration</div>
+            <div class="pp-meta-value" id="pp-proposal-duration">—</div>
+          </div>
         </div>
       </div>
     </div>
-    {% endfor %}
-  </div>
 
-</div>
+    <!-- Proposal content: results header + section cards (hidden until complete) -->
+    <div id="pp-proposal-content-section" style="display:none;">
+      <div class="pp-results-header">
+        <div class="pp-results-title">
+          <div class="pp-results-icon" style="background:linear-gradient(135deg,var(--pp-violet),var(--pp-indigo));">
+            <i class="fas fa-file-contract"></i>
+          </div>
+          Proposal Document
+        </div>
+        <div class="pp-results-actions">
+          <a id="pp-download-docx-btn"
+             href="{% url 'proposals:proposal_download' run_id=run.id %}"
+             class="pp-btn-download-docx">
+            <i class="fas fa-file-word"></i> Download .docx
+          </a>
+          <a href="{% url 'pipeline:upload' %}" class="pp-btn-new-run">
+            <i class="fas fa-plus"></i> New Run
+          </a>
+        </div>
+      </div>
+      <div id="pp-proposal-sections"></div>
+    </div>
+
+  </div><!-- /#tab-proposal -->
+
+</div><!-- /.tab-content -->
 
 {% endblock %}
 
@@ -170,29 +300,12 @@
 (function () {
   'use strict';
 
-  /* ── Constants ──────────────────────────────────────────────────────── */
-  const STREAM_URL = "{% url 'pipeline:run_stream' run_id=run.id %}";
-
-  const DIMS = [
-    { key: 'business',    label: 'Business' },
-    { key: 'technical',   label: 'Technical' },
-    { key: 'operational', label: 'Operational' },
-    { key: 'strategic',   label: 'Strategic' },
-  ];
-
-  const COLS = [
-    { key: 'pain_points',      label: 'Pain Points' },
-    { key: 'desired_state',    label: 'Desired State' },
-    { key: 'success_criteria', label: 'Success Criteria' },
-    { key: 'risks_unknowns',   label: 'Risks & Unknowns' },
-  ];
-
-  const CONF_BADGE = {
-    high:         '<span class="badge badge-success">High</span>',
-    medium:       '<span class="badge badge-warning">Medium</span>',
-    low:          '<span class="badge badge-secondary">Low</span>',
-    contradicted: '<span class="badge badge-danger">Contradicted</span>',
-  };
+  /* ── Shared utilities ───────────────────────────────────────────────── */
+  function escHtml(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
 
   const LOG_META = {
     step:    { prefix: '▸', cls: 'pp-log-step' },
@@ -204,227 +317,511 @@
     complete:{ prefix: '★', cls: 'pp-log-success' },
   };
 
-  /* ── DOM refs ───────────────────────────────────────────────────────── */
-  const logEl           = document.getElementById('pp-log');
-  const statusBadge     = document.getElementById('pp-status-badge');
-  const termStatus      = document.getElementById('pp-terminal-status');
-  const matrixSec       = document.getElementById('pp-matrix-section');
-  const stakeholderSec  = document.getElementById('pp-stakeholders-section');
-  const stakeholderGrid = document.getElementById('pp-stakeholder-grid');
-  const shCount         = document.getElementById('pp-sh-count');
-  const rawSec          = document.getElementById('pp-raw-section');
-  const rawBody         = document.getElementById('pp-raw-body');
-  const rawOutput       = document.getElementById('pp-raw-output');
-  const rawToggle       = document.getElementById('pp-raw-toggle');
-  const rawChevron      = document.getElementById('pp-raw-chevron');
-  const downloadBtn     = document.getElementById('pp-download-btn');
-  const clearBtn        = document.getElementById('pp-clear-log');
-
-  let spinnerLine = null;
-  let matrixData  = null;
-
-  /* ── Raw output toggle ──────────────────────────────────────────────── */
-  rawToggle.addEventListener('click', function() {
-    const open = rawBody.style.display === 'block';
-    rawBody.style.display = open ? 'none' : 'block';
-    rawChevron.style.transform = open ? '' : 'rotate(180deg)';
-  });
-
-  /* ── Log helpers ────────────────────────────────────────────────────── */
-  function removeSpinner() {
-    if (spinnerLine) { spinnerLine.remove(); spinnerLine = null; }
-  }
-
-  function appendLog(type, message) {
-    removeSpinner();
-    const meta = LOG_META[type] || { prefix: '·', cls: 'pp-log-info' };
-    const line = document.createElement('p');
-    line.className = `pp-log-line ${meta.cls}`;
-    line.innerHTML =
-      `<span class="pp-log-prefix">${meta.prefix}</span>` +
-      `<span class="pp-log-text">${escHtml(message)}</span>`;
-    logEl.appendChild(line);
-
-    if (type === 'step' || type === 'info') {
-      spinnerLine = document.createElement('p');
-      spinnerLine.className = 'pp-spinner-line';
-      spinnerLine.innerHTML = '<span class="pp-spinner"></span><span style="color:#484f58">Processing…</span>';
-      logEl.appendChild(spinnerLine);
+  function makeLogAppender(logEl) {
+    let spinnerLine = null;
+    function removeSpinner() {
+      if (spinnerLine) { spinnerLine.remove(); spinnerLine = null; }
     }
-    logEl.scrollTop = logEl.scrollHeight;
-  }
-
-  function escHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
-
-  /* ── Status badge ───────────────────────────────────────────────────── */
-  function setStatus(status) {
-    const labels = {
-      running:  '<i class="fas fa-spinner fa-spin"></i> Running',
-      complete: '<i class="fas fa-check-circle"></i> Complete',
-      failed:   '<i class="fas fa-times-circle"></i> Failed',
-      cached:   '<i class="fas fa-bolt"></i> Cached',
-    };
-    statusBadge.className = `pp-status-badge pp-status-${status}`;
-    statusBadge.innerHTML = labels[status] || labels.running;
-    termStatus.className = `pp-terminal-status ${status}`;
-    termStatus.textContent = status;
-  }
-
-  /* ── Stakeholders ───────────────────────────────────────────────────── */
-  function renderStakeholders(list) {
-    if (!list || !list.length) return;
-    shCount.textContent = list.length + (list.length === 1 ? ' person' : ' people');
-    stakeholderGrid.innerHTML = '';
-
-    list.forEach((sh, idx) => {
-      const initials = sh.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-      const stanceCls = sh.stance || 'unknown';
-      const card = document.createElement('div');
-      card.className = `pp-stakeholder-card ${stanceCls}`;
-      card.innerHTML = `
-        <div class="pp-sh-header">
-          <div class="pp-sh-avatar pp-sh-avatar-${idx % 8}">${initials}</div>
-          <div class="pp-sh-info">
-            <div class="pp-sh-name">${escHtml(sh.name)}</div>
-            <div class="pp-sh-title">${escHtml(sh.title)}</div>
-          </div>
-        </div>
-        <div class="pp-sh-badges">
-          <span class="pp-sh-stance ${stanceCls}">${escHtml(sh.stance)}</span>
-          <span class="pp-sh-influence"><i class="fas fa-signal"></i>${escHtml(sh.influence)} influence</span>
-        </div>
-        <div class="pp-sh-role"><i class="fas fa-sitemap"></i>${escHtml(sh.role_in_decision)}</div>
-        <div class="pp-sh-concern-label">Key Concern</div>
-        <div class="pp-sh-concern">${escHtml(sh.key_concern)}</div>
-        <div class="pp-sh-quote">"${escHtml(sh.source_excerpt)}"</div>
-      `;
-      stakeholderGrid.appendChild(card);
-    });
-    stakeholderSec.style.display = 'block';
-  }
-
-  /* ── Matrix ─────────────────────────────────────────────────────────── */
-  function renderMatrix(matrix) {
-    matrixData = matrix;
-    DIMS.forEach(dim => {
-      const dimData = matrix[dim.key];
-      const colsEl  = document.getElementById(`cols-${dim.key}`);
-      let total = 0;
-      colsEl.innerHTML = '';
-      COLS.forEach(col => {
-        const items = dimData[col.key] || [];
-        total += items.length;
-        const card = document.createElement('div');
-        card.className = 'pp-col-card';
-        card.innerHTML =
-          `<div class="pp-col-header">${escHtml(col.label)}</div>` +
-          `<div class="pp-col-body">${renderItems(items)}</div>`;
-        colsEl.appendChild(card);
-      });
-      const badge = document.getElementById(`badge-${dim.key}`);
-      if (badge) badge.textContent = `${total} items`;
-    });
-
-    const blob = new Blob([JSON.stringify(matrix, null, 2)], { type: 'application/json' });
-    downloadBtn.href = URL.createObjectURL(blob);
-    downloadBtn.download = `client_matrix_{{ run.id }}.json`;
-
-    matrixSec.style.display = 'block';
-    setTimeout(() => matrixSec.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
-  }
-
-  function renderItems(items) {
-    if (!items.length) return '<p style="color:var(--pp-slate-400);font-size:.8rem;padding:4px 0;">No data extracted.</p>';
-    return items.map(item => `
-      <div class="pp-matrix-item">
-        <div class="pp-item-row">
-          ${CONF_BADGE[item.confidence] || ''}
-          <span class="pp-item-statement">${escHtml(item.statement)}</span>
-        </div>
-        <div class="pp-item-source">"${escHtml(item.source_excerpt)}"</div>
-        ${item.contradiction_note
-          ? `<div class="pp-item-contradiction"><i class="fas fa-exclamation-triangle"></i> ${escHtml(item.contradiction_note)}</div>`
-          : ''}
-      </div>`).join('');
-  }
-
-  /* ── SSE ────────────────────────────────────────────────────────────── */
-  const es = new EventSource(STREAM_URL);
-
-  es.onopen = function () {
-    termStatus.textContent = 'running';
-    clearBtn.style.display = 'inline-block';
-  };
-
-  es.onmessage = function (evt) {
-    let payload;
-    try { payload = JSON.parse(evt.data); } catch { return; }
-    const { type, message, matrix } = payload;
-
-    switch (type) {
-      case 'step':
-      case 'info':
-      case 'warning':
-      case 'error':
-      case 'cached':
-        appendLog(type, message || '');
-        break;
-
-      case 'success':
-        appendLog('success', message || '');
-        break;
-
-      case 'raw_output':
-        if (payload.raw) {
-          try { rawOutput.textContent = JSON.stringify(JSON.parse(payload.raw), null, 2); }
-          catch { rawOutput.textContent = payload.raw; }
-          rawSec.style.display = 'block';
-          appendLog('info', 'Raw model output ready — see "Raw Model Output" card below');
-        }
-        break;
-
-      case 'complete':
-        removeSpinner();
-        appendLog('complete', message || 'Agent finished.');
-        setStatus('complete');
-        es.close();
-        if (payload.raw_output) {
-          try { rawOutput.textContent = JSON.stringify(JSON.parse(payload.raw_output), null, 2); }
-          catch { rawOutput.textContent = payload.raw_output; }
-          rawSec.style.display = 'block';
-        }
-        if (matrix) {
-          renderStakeholders(matrix.stakeholders || []);
-          renderMatrix(matrix);
-        }
-        break;
-
-      default:
-        appendLog('info', message || JSON.stringify(payload));
-    }
-
-    if (type === 'error') {
-      setStatus('failed');
+    return function appendLog(type, message) {
       removeSpinner();
-      es.close();
+      const meta = LOG_META[type] || { prefix: '·', cls: 'pp-log-info' };
+      const line = document.createElement('p');
+      line.className = 'pp-log-line ' + meta.cls;
+      line.innerHTML =
+        '<span class="pp-log-prefix">' + meta.prefix + '</span>' +
+        '<span class="pp-log-text">'   + escHtml(message) + '</span>';
+      logEl.appendChild(line);
+      if (type === 'step' || type === 'info') {
+        spinnerLine = document.createElement('p');
+        spinnerLine.className = 'pp-spinner-line';
+        spinnerLine.innerHTML = '<span class="pp-spinner"></span><span style="color:#484f58">Processing…</span>';
+        logEl.appendChild(spinnerLine);
+      }
+      logEl.scrollTop = logEl.scrollHeight;
+    };
+  }
+
+  function setTabDot(tabId, state) {
+    const dot = document.getElementById('tab-' + tabId + '-dot');
+    if (dot) {
+      dot.className = 'pp-tab-status-dot ' + state;
     }
-    if (type === 'cached') setStatus('cached');
-  };
+  }
 
-  es.onerror = function () {
-    if (es.readyState === EventSource.CLOSED) return;
-    removeSpinner();
-    appendLog('error', 'Connection lost. Server may have closed the stream.');
-    setStatus('failed');
-    es.close();
-  };
+  function switchTab(tabId) {
+    const link = document.getElementById('tab-' + tabId + '-link');
+    if (link) $(link).tab('show');
+  }
 
-  /* ── Clear log ──────────────────────────────────────────────────────── */
-  clearBtn.addEventListener('click', function () { logEl.innerHTML = ''; });
+
+  /* ════════════════════════════════════════════════════════════════════════
+     DEBRIEF MODULE
+  ════════════════════════════════════════════════════════════════════════ */
+  const DebriefModule = (function () {
+
+    const STREAM_URL = "{% url 'pipeline:run_stream' run_id=run.id %}";
+
+    const DIMS = [
+      { key: 'business',    label: 'Business' },
+      { key: 'technical',   label: 'Technical' },
+      { key: 'operational', label: 'Operational' },
+      { key: 'strategic',   label: 'Strategic' },
+    ];
+    const COLS = [
+      { key: 'pain_points',      label: 'Pain Points' },
+      { key: 'desired_state',    label: 'Desired State' },
+      { key: 'success_criteria', label: 'Success Criteria' },
+      { key: 'risks_unknowns',   label: 'Risks & Unknowns' },
+    ];
+    const CONF_BADGE = {
+      high:         '<span class="badge badge-success">High</span>',
+      medium:       '<span class="badge badge-warning">Medium</span>',
+      low:          '<span class="badge badge-secondary">Low</span>',
+      contradicted: '<span class="badge badge-danger">Contradicted</span>',
+    };
+
+    const logEl          = document.getElementById('pp-log');
+    const statusBadge    = document.getElementById('pp-status-badge');
+    const termStatus     = document.getElementById('pp-terminal-status');
+    const matrixSec      = document.getElementById('pp-matrix-section');
+    const stakeholderSec = document.getElementById('pp-stakeholders-section');
+    const stakeholderGrid= document.getElementById('pp-stakeholder-grid');
+    const shCount        = document.getElementById('pp-sh-count');
+    const rawSec         = document.getElementById('pp-raw-section');
+    const rawBody        = document.getElementById('pp-raw-body');
+    const rawOutput      = document.getElementById('pp-raw-output');
+    const rawToggle      = document.getElementById('pp-raw-toggle');
+    const rawChevron     = document.getElementById('pp-raw-chevron');
+    const downloadBtn    = document.getElementById('pp-download-btn');
+    const clearBtn       = document.getElementById('pp-clear-log');
+
+    const appendLog = makeLogAppender(logEl);
+
+    rawToggle.addEventListener('click', function () {
+      const open = rawBody.style.display === 'block';
+      rawBody.style.display = open ? 'none' : 'block';
+      rawChevron.style.transform = open ? '' : 'rotate(180deg)';
+    });
+
+    function setStatus(status) {
+      const labels = {
+        running:  '<i class="fas fa-spinner fa-spin"></i> Running',
+        complete: '<i class="fas fa-check-circle"></i> Complete',
+        failed:   '<i class="fas fa-times-circle"></i> Failed',
+        cached:   '<i class="fas fa-bolt"></i> Cached',
+      };
+      statusBadge.className = 'pp-status-badge pp-status-' + status;
+      statusBadge.innerHTML = labels[status] || labels.running;
+      termStatus.className  = 'pp-terminal-status ' + status;
+      termStatus.textContent = status;
+    }
+
+    function renderStakeholders(list) {
+      if (!list || !list.length) return;
+      shCount.textContent = list.length + (list.length === 1 ? ' person' : ' people');
+      stakeholderGrid.innerHTML = '';
+      list.forEach(function (sh, idx) {
+        const initials  = sh.name.split(' ').map(function (w) { return w[0]; }).join('').slice(0, 2).toUpperCase();
+        const stanceCls = sh.stance || 'unknown';
+        const card = document.createElement('div');
+        card.className = 'pp-stakeholder-card ' + stanceCls;
+        card.innerHTML =
+          '<div class="pp-sh-header">' +
+            '<div class="pp-sh-avatar pp-sh-avatar-' + (idx % 8) + '">' + initials + '</div>' +
+            '<div class="pp-sh-info">' +
+              '<div class="pp-sh-name">' + escHtml(sh.name) + '</div>' +
+              '<div class="pp-sh-title">' + escHtml(sh.title) + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="pp-sh-badges">' +
+            '<span class="pp-sh-stance ' + stanceCls + '">' + escHtml(sh.stance) + '</span>' +
+            '<span class="pp-sh-influence"><i class="fas fa-signal"></i>' + escHtml(sh.influence) + ' influence</span>' +
+          '</div>' +
+          '<div class="pp-sh-role"><i class="fas fa-sitemap"></i>' + escHtml(sh.role_in_decision) + '</div>' +
+          '<div class="pp-sh-concern-label">Key Concern</div>' +
+          '<div class="pp-sh-concern">' + escHtml(sh.key_concern) + '</div>' +
+          '<div class="pp-sh-quote">"' + escHtml(sh.source_excerpt) + '"</div>';
+        stakeholderGrid.appendChild(card);
+      });
+      stakeholderSec.style.display = 'block';
+    }
+
+    function renderItems(items) {
+      if (!items.length) return '<p style="color:var(--pp-slate-400);font-size:.8rem;padding:4px 0;">No data extracted.</p>';
+      return items.map(function (item) {
+        return '<div class="pp-matrix-item">' +
+          '<div class="pp-item-row">' +
+            (CONF_BADGE[item.confidence] || '') +
+            '<span class="pp-item-statement">' + escHtml(item.statement) + '</span>' +
+          '</div>' +
+          '<div class="pp-item-source">"' + escHtml(item.source_excerpt) + '"</div>' +
+          (item.contradiction_note
+            ? '<div class="pp-item-contradiction"><i class="fas fa-exclamation-triangle"></i> ' + escHtml(item.contradiction_note) + '</div>'
+            : '') +
+        '</div>';
+      }).join('');
+    }
+
+    function renderMatrix(matrix) {
+      DIMS.forEach(function (dim) {
+        const dimData = matrix[dim.key];
+        const colsEl  = document.getElementById('cols-' + dim.key);
+        let total = 0;
+        colsEl.innerHTML = '';
+        COLS.forEach(function (col) {
+          const items = dimData[col.key] || [];
+          total += items.length;
+          const card = document.createElement('div');
+          card.className = 'pp-col-card';
+          card.innerHTML =
+            '<div class="pp-col-header">' + escHtml(col.label) + '</div>' +
+            '<div class="pp-col-body">' + renderItems(items) + '</div>';
+          colsEl.appendChild(card);
+        });
+        const badge = document.getElementById('badge-' + dim.key);
+        if (badge) badge.textContent = total + ' items';
+      });
+      const blob = new Blob([JSON.stringify(matrix, null, 2)], { type: 'application/json' });
+      downloadBtn.href     = URL.createObjectURL(blob);
+      downloadBtn.download = 'client_matrix_{{ run.id }}.json';
+      matrixSec.style.display = 'block';
+    }
+
+    function init() {
+      setTabDot('debrief', 'running');
+      const es = new EventSource(STREAM_URL);
+
+      es.onopen = function () {
+        termStatus.textContent = 'running';
+        clearBtn.style.display = 'inline-block';
+      };
+
+      es.onmessage = function (evt) {
+        var payload;
+        try { payload = JSON.parse(evt.data); } catch (e) { return; }
+        var type    = payload.type;
+        var message = payload.message;
+        var matrix  = payload.matrix;
+
+        switch (type) {
+          case 'step':
+          case 'info':
+          case 'warning':
+          case 'error':
+          case 'cached':
+          case 'success':
+            appendLog(type, message || '');
+            break;
+
+          case 'raw_output':
+            if (payload.raw) {
+              try { rawOutput.textContent = JSON.stringify(JSON.parse(payload.raw), null, 2); }
+              catch (e) { rawOutput.textContent = payload.raw; }
+              rawSec.style.display = 'block';
+              appendLog('info', 'Raw model output ready — see "Raw Model Output" section in Debrief tab');
+            }
+            break;
+
+          case 'complete':
+            appendLog('complete', message || 'Debrief finished.');
+            setStatus('complete');
+            setTabDot('debrief', 'complete');
+            es.close();
+            if (payload.raw_output) {
+              try { rawOutput.textContent = JSON.stringify(JSON.parse(payload.raw_output), null, 2); }
+              catch (e) { rawOutput.textContent = payload.raw_output; }
+              rawSec.style.display = 'block';
+            }
+            if (matrix) {
+              renderStakeholders(matrix.stakeholders || []);
+              renderMatrix(matrix);
+            }
+            ProposalModule.start();
+            break;
+        }
+
+        if (type === 'error') {
+          setStatus('failed');
+          setTabDot('debrief', 'failed');
+          es.close();
+        }
+        if (type === 'cached') {
+          setStatus('cached');
+          setTabDot('debrief', 'complete');
+          ProposalModule.init();
+        }
+      };
+
+      es.onerror = function () {
+        if (es.readyState === EventSource.CLOSED) return;
+        appendLog('error', 'Connection lost. Server may have closed the stream.');
+        setStatus('failed');
+        setTabDot('debrief', 'failed');
+        es.close();
+      };
+
+      clearBtn.addEventListener('click', function () { logEl.innerHTML = ''; });
+    }
+
+    return { init: init };
+  })();
+
+
+  /* ════════════════════════════════════════════════════════════════════════
+     PROPOSAL MODULE
+  ════════════════════════════════════════════════════════════════════════ */
+  const ProposalModule = (function () {
+
+    const STREAM_URL = "{% url 'proposals:proposal_stream' run_id=run.id %}";
+    const STATUS_URL = "{% url 'proposals:proposal_status' run_id=run.id %}";
+
+    const logCard        = document.getElementById('pp-proposal-log-card');
+    const termStatus     = document.getElementById('pp-proposal-terminal-status');
+    const logEl          = document.getElementById('pp-proposal-log');
+    const rawSec         = document.getElementById('pp-proposal-raw-section');
+    const rawBody        = document.getElementById('pp-proposal-raw-body');
+    const rawOutput      = document.getElementById('pp-proposal-raw-output');
+    const rawToggle      = document.getElementById('pp-proposal-raw-toggle');
+    const rawChevron     = document.getElementById('pp-proposal-raw-chevron');
+    const idleState      = document.getElementById('pp-proposal-idle');
+    const summarySec     = document.getElementById('pp-proposal-summary-section');
+    const contentSec     = document.getElementById('pp-proposal-content-section');
+    const sectionsEl     = document.getElementById('pp-proposal-sections');
+    const clientEl       = document.getElementById('pp-proposal-client');
+    const engagementEl   = document.getElementById('pp-proposal-engagement');
+    const durationEl     = document.getElementById('pp-proposal-duration');
+    const clearBtn       = document.getElementById('pp-clear-proposal-log');
+
+    const appendLog = makeLogAppender(logEl);
+    let   streamStarted = false;
+
+    rawToggle.addEventListener('click', function () {
+      var open = rawBody.style.display === 'block';
+      rawBody.style.display = open ? 'none' : 'block';
+      rawChevron.style.transform = open ? '' : 'rotate(180deg)';
+    });
+
+    clearBtn.addEventListener('click', function () { logEl.innerHTML = ''; });
+
+    function showTerminal() {
+      switchTab('proposal');
+      logCard.style.display = 'block';
+      termStatus.textContent = 'running';
+      termStatus.className   = 'pp-terminal-status running';
+      if (idleState) idleState.style.display = 'none';
+    }
+
+    function renderProposal(proposal) {
+      clientEl.textContent     = proposal.client_name     || '—';
+      engagementEl.textContent = proposal.engagement_type || '—';
+      durationEl.textContent   = proposal.total_duration_estimate || '—';
+      summarySec.style.display = 'block';
+
+      sectionsEl.innerHTML = '';
+
+      [
+        { num: 1, key: 'executive_summary' },
+        { num: 2, key: 'understanding' },
+        { num: 3, key: 'approach' },
+      ].forEach(function (s) {
+        var sec = proposal[s.key];
+        if (!sec) return;
+        sectionsEl.appendChild(buildSectionCard(s.num, sec.title, sec.body, sec.bullets || []));
+      });
+
+      if (proposal.phases_timeline && proposal.phases_timeline.length) {
+        sectionsEl.appendChild(buildPhasesCard(proposal.phases_timeline));
+      }
+
+      if (proposal.pricing_approach) {
+        var ps = proposal.pricing_approach;
+        sectionsEl.appendChild(buildSectionCard(5, ps.title, ps.body, ps.bullets || []));
+      }
+
+      if (proposal.open_questions && proposal.open_questions.length) {
+        sectionsEl.appendChild(buildOpenQuestionsCard(proposal.open_questions));
+      }
+
+      contentSec.style.display = 'block';
+      setTimeout(function () {
+        summarySec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 200);
+    }
+
+    function buildSectionCard(num, title, body, bullets) {
+      var card = document.createElement('div');
+      card.className = 'pp-proposal-section-card';
+      var bulletsHtml = bullets && bullets.length
+        ? '<ul class="pp-proposal-bullets">' + bullets.map(function (b) { return '<li>' + escHtml(b) + '</li>'; }).join('') + '</ul>'
+        : '';
+      var bodyHtml = (body || '').split('\n\n').filter(Boolean).map(function (p) {
+        return '<p>' + escHtml(p.trim()) + '</p>';
+      }).join('');
+      card.innerHTML =
+        '<div class="pp-proposal-section-header">' +
+          '<span class="pp-proposal-section-number">' + num + '</span>' +
+          '<span class="pp-proposal-section-title">' + escHtml(title) + '</span>' +
+        '</div>' +
+        '<div class="pp-proposal-section-body">' + bodyHtml + bulletsHtml + '</div>';
+      return card;
+    }
+
+    function buildPhasesCard(phases) {
+      var card = document.createElement('div');
+      card.className = 'pp-proposal-section-card';
+      var phasesHtml = phases.map(function (ph) {
+        var deliverables = (ph.deliverables || []).map(function (d) { return '<li>' + escHtml(d) + '</li>'; }).join('');
+        return '<div class="pp-phase-card">' +
+          '<div class="pp-phase-number">Phase ' + ph.phase_number + '</div>' +
+          '<div class="pp-phase-name">' + escHtml(ph.phase_name) + '</div>' +
+          '<span class="pp-phase-duration"><i class="fas fa-clock mr-1"></i>' + escHtml(ph.duration) + '</span>' +
+          '<div class="pp-phase-desc">' + escHtml(ph.description) + '</div>' +
+          '<ul class="pp-phase-deliverables">' + deliverables + '</ul>' +
+        '</div>';
+      }).join('');
+      card.innerHTML =
+        '<div class="pp-proposal-section-header">' +
+          '<span class="pp-proposal-section-number">4</span>' +
+          '<span class="pp-proposal-section-title">Phases &amp; Timeline</span>' +
+        '</div>' +
+        '<div class="pp-phase-grid">' + phasesHtml + '</div>';
+      return card;
+    }
+
+    function buildOpenQuestionsCard(questions) {
+      var card = document.createElement('div');
+      card.className = 'pp-proposal-section-card';
+      var qHtml = questions.map(function (oq) {
+        var confCls = oq.confidence === 'contradicted' ? 'pp-oq-contradicted' : 'pp-oq-low';
+        return '<div class="pp-oq-card ' + confCls + '">' +
+          '<div class="pp-oq-question">' + escHtml(oq.question) + '</div>' +
+          '<div class="pp-oq-source">' + escHtml(oq.source_statement) + '</div>' +
+          '<div class="pp-oq-meta">' +
+            '<span><i class="fas fa-layer-group mr-1"></i>' + escHtml(oq.dimension) + '</span>' +
+            '<span><i class="fas fa-exclamation-circle mr-1"></i>' + escHtml(oq.confidence) + ' confidence</span>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+      card.innerHTML =
+        '<div class="pp-proposal-section-header">' +
+          '<span class="pp-proposal-section-number">6</span>' +
+          '<span class="pp-proposal-section-title">Open Questions</span>' +
+          '<span class="badge badge-warning ml-2">' + questions.length + '</span>' +
+        '</div>' +
+        '<div class="pp-proposal-section-body">' + qHtml + '</div>';
+      return card;
+    }
+
+    function startStream() {
+      if (streamStarted) return;
+      streamStarted = true;
+      showTerminal();
+      setTabDot('proposal', 'running');
+
+      var es = new EventSource(STREAM_URL);
+
+      es.onmessage = function (evt) {
+        var payload;
+        try { payload = JSON.parse(evt.data); } catch (e) { return; }
+        var type    = payload.type;
+        var message = payload.message;
+
+        switch (type) {
+          case 'step':
+          case 'info':
+          case 'warning':
+          case 'error':
+          case 'cached':
+          case 'success':
+            appendLog(type, message || '');
+            break;
+
+          case 'raw_output':
+            if (payload.raw) {
+              try { rawOutput.textContent = JSON.stringify(JSON.parse(payload.raw), null, 2); }
+              catch (e) { rawOutput.textContent = payload.raw; }
+              rawSec.style.display = 'block';
+              appendLog('info', 'Raw proposal output ready — see card below');
+            }
+            break;
+
+          case 'complete':
+            appendLog('complete', message || 'Proposal Agent finished.');
+            termStatus.textContent = 'complete';
+            termStatus.className   = 'pp-terminal-status complete';
+            setTabDot('proposal', 'complete');
+            es.close();
+            if (payload.raw_output) {
+              try { rawOutput.textContent = JSON.stringify(JSON.parse(payload.raw_output), null, 2); }
+              catch (e) { rawOutput.textContent = payload.raw_output; }
+              rawSec.style.display = 'block';
+            }
+            if (payload.proposal) {
+              renderProposal(payload.proposal);
+            }
+            break;
+        }
+
+        if (type === 'error') {
+          termStatus.textContent = 'failed';
+          termStatus.className   = 'pp-terminal-status failed';
+          setTabDot('proposal', 'failed');
+          es.close();
+        }
+        if (type === 'cached') {
+          termStatus.textContent = 'cached';
+          termStatus.className   = 'pp-terminal-status cached';
+        }
+      };
+
+      es.onerror = function () {
+        if (es.readyState === EventSource.CLOSED) return;
+        appendLog('error', 'Connection lost.');
+        termStatus.textContent = 'failed';
+        termStatus.className   = 'pp-terminal-status failed';
+        setTabDot('proposal', 'failed');
+        es.close();
+      };
+    }
+
+    function start() {
+      startStream();
+    }
+
+    function init() {
+      fetch(STATUS_URL)
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.status === 'complete' || data.status === 'running') {
+            startStream();
+          } else {
+            start();
+          }
+        })
+        .catch(function () { start(); });
+    }
+
+    return { start: start, init: init };
+  })();
+
+
+  /* ── Boot ───────────────────────────────────────────────────────────── */
+  document.addEventListener('DOMContentLoaded', function () {
+    var hash = window.location.hash;
+    if (hash === '#tab-proposal') switchTab('proposal');
+
+    $('#pp-tab-content a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+      window.location.hash = e.target.getAttribute('href');
+    });
+
+    var runStatus = '{{ run.status }}';
+    if (runStatus === 'complete') {
+      setTabDot('debrief', 'complete');
+      ProposalModule.init();
+    }
+
+    DebriefModule.init();
+  });
 
 })();
 </script>
